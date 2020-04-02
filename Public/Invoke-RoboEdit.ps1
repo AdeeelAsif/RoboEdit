@@ -26,19 +26,13 @@ Function Invoke-RoboEdit {
 
         { $_ -eq "Deploy" } {
 
-            $File = Import-File -Path $Path -Lot $Lot -FileType $FileType 
-            $File | Convertto-json | Out-File c:\temp\debug.json
-            $File.Server | ForEach-Object {
+            Import-File -Path $Path -Lot $Lot -FileType $FileType | ForEach-Object {
 
-                $Server = $_
-                $Lot = $File.Lot | Select-Object -unique
-                ($File | Where-Object { $_.Server -eq $Server }).Path | ForEach-Object {
+                Test-FileExistence -Server $_.Server -Path $_.Path -Lot $_.Lot
 
-                    Test-FileExistence -Server $Server -Path $_ -Lot $Lot
-
-                }
             }
         }
+
 
         { $_ -eq "Rollback" } {
 

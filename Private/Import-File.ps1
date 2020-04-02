@@ -45,21 +45,11 @@ Function Import-File {
             if (($File.Lot | Select-Object -unique).count -eq 1) {
 
                 Write-Verbose "Lot consistency check OK"
+                Return $File
             }
             else {
 
                 Write-Error -ErrorId 3 -Exception "Lot consistency check KO"
-            }
-
-            $File.Server | Select-Object -Unique | ForEach-Object {
-                
-                $Server = $_
-
-                [PSCustomObject]@{
-                    Server = $_
-                    Path   = $(($File | Where-Object { $_.Server -eq $Server }).Path)
-                    Lot    = $(($File | Where-Object { $_.Server -eq $Server }).Lot | Select-Object -Unique)
-                }
             }
         }
     }

@@ -2,7 +2,7 @@ function Test-FileExistence {
 
     param (
     
-        [Parameter(Mandatory = $false, ValueFromPipeline = $true)]
+        [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [string]$Server,
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [string]$Path,
@@ -15,6 +15,6 @@ function Test-FileExistence {
         Server = $Server
         Exist  = $(Test-Path $Path)
         Path   = $Path
-        Lot = $Lot
+        Lot    = $Lot
     }
 }
