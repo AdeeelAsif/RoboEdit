@@ -16,7 +16,13 @@ Function Invoke-RoboEdit {
 
         [Parameter(Mandatory = $true)]
         [ValidateSet('Deploy', 'Rollback', 'Test')]
-        [string]$Mode
+        [string]$Mode,
+
+        [Parameter(Mandatory = $true)]
+        [string[]]$StringToReplace,
+
+        [Parameter(Mandatory = $true)]
+        [string]$NewString
 
     )
 
@@ -28,9 +34,12 @@ Function Invoke-RoboEdit {
 
             Import-File -Path $Path -Lot $Lot -FileType $FileType | ForEach-Object {
 
-                Test-FileExistence -Server $_.Server -Path $_.Path -Lot $_.Lot
+                #    Test-FileExistence -Server $_.Server -Path $_.Path -Lot $_.Lot
 
-            }
+                Test-FileConsistency -Server $_.Server -Path $_.Path -Lot $_.Lot -StringToReplace $StringToReplace -NewString $NewString
+
+            } | Sort-Object FileConsistencyTest | Ft
+
         }
 
 
