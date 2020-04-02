@@ -2,12 +2,10 @@ Function Invoke-RoboEdit {
 
     Param(
 
-        [Parameter(Mandatory = $True,
-            ValueFromPipeline = $True)]
+        [Parameter(Mandatory = $True, ValueFromPipeline = $True)]
         [string]$Path,
 
-        [Parameter(Mandatory = $true,
-            ValueFromPipeline = $True)]
+        [Parameter(Mandatory = $true, ValueFromPipeline = $True)]
         [int]$Lot,
 
         [Parameter(Mandatory = $true)]
@@ -22,11 +20,20 @@ Function Invoke-RoboEdit {
         [string[]]$StringToReplace,
 
         [Parameter(Mandatory = $true)]
-        [string]$NewString
+        [string]$NewString,
 
+        [Parameter(Mandatory = $true)]
+        [int]$TargetPort,
+
+        [Parameter(Mandatory = $true)]
+        [string]$TargetHost
     )
 
     Write-Verbose "Execution mode is $($Mode)"
+
+    $Username = "aasif"
+    $Password = ConvertTo-SecureString "Mars2020" -AsPlainText -Force
+    $Credentials = New-Object System.Management.Automation.PSCredential($Username, $Password)
 
     Switch ($Mode) {
 
@@ -38,12 +45,12 @@ Function Invoke-RoboEdit {
 
                     Server              = $_.Server
                     Path                = $_.Path
-                    FileExistence       = (Test-FileExistence -Server $_.Server -Path $_.Path -Lot $_.Lot).Exist
+                    FileExistence       = (Test-Path $_.Path)
                     FileConsistencyTest = (Test-FileConsistency -Server $_.Server -Path $_.Path -Lot $_.Lot -StringToReplace $StringToReplace -NewString $NewString).FileConsistencyTest
+                    TestTCPConnection   = (Invoke-Command -Credential $Credentials -ComputerName VM1 -ScriptBlock { (Test-NetConnection -ComputerName $args[0] -Port $args[1]) } -ArgumentList $TargetHost, $TargetPort).tcptestsucceeded
                     Lot                 = $_.Lot
-                    
                 }                
-            }
+            } 
         }
 
         { $_ -eq "Rollback" } {
