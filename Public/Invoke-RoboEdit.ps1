@@ -34,14 +34,17 @@ Function Invoke-RoboEdit {
 
             Import-File -Path $Path -Lot $Lot -FileType $FileType | ForEach-Object {
 
-                #    Test-FileExistence -Server $_.Server -Path $_.Path -Lot $_.Lot
+                [PSCustomObject]@{
 
-                Test-FileConsistency -Server $_.Server -Path $_.Path -Lot $_.Lot -StringToReplace $StringToReplace -NewString $NewString
-
-            } | Sort-Object FileConsistencyTest | Ft
-
+                    Server              = $_.Server
+                    Path                = $_.Path
+                    FileExistence       = (Test-FileExistence -Server $_.Server -Path $_.Path -Lot $_.Lot).Exist
+                    FileConsistencyTest = (Test-FileConsistency -Server $_.Server -Path $_.Path -Lot $_.Lot -StringToReplace $StringToReplace -NewString $NewString).FileConsistencyTest
+                    Lot                 = $_.Lot
+                    
+                }                
+            }
         }
-
 
         { $_ -eq "Rollback" } {
 

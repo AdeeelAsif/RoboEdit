@@ -14,7 +14,5 @@ function Test-FileExistence {
     [PSCustomObject]@{
         Server = $Server
         Exist  = $(Test-Path $Path)
-        Path   = $Path
-        Lot    = $Lot
     }
 }

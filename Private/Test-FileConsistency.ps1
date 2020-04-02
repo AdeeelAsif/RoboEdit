@@ -29,9 +29,11 @@ Function Test-FileConsistency {
                 #FileConsistency     = $true
                 Path                = $Path
                 Lot                 = $Lot
-                StringToReplace     = $_.Replace('\\', '\')
                 #   Newstring       = $NewString
-                FileConsistencyTest = "Passed"
+                FileConsistencyTest = [PSCustomObject]@{
+                    Name   = $_.Replace('\\', '\')
+                    Result = "Passed"
+                }
             }
         }
         else {
@@ -43,7 +45,10 @@ Function Test-FileConsistency {
                 Lot                 = $Lot
                 StringToReplace     = $_.Replace('\\', '\')
                 #    Newstring       = $NewString
-                FileConsistencyTest = "Failed"
+                FileConsistencyTest = [PSCustomObject]@{
+                    Name   = $_.Replace('\\', '\')
+                    Result = "Failed"
+                }
             }
         }
     }
