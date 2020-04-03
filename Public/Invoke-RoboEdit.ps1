@@ -31,10 +31,6 @@ Function Invoke-RoboEdit {
 
     Write-Verbose "Execution mode is $($Mode)"
 
-    $Username = "aasif"
-    $Password = ConvertTo-SecureString "Mars2020" -AsPlainText -Force
-    $Credentials = New-Object System.Management.Automation.PSCredential($Username, $Password)
-
     Switch ($Mode) {
 
         { $_ -eq "Deploy" } {
