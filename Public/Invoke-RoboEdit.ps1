@@ -47,7 +47,11 @@ Function Invoke-RoboEdit {
                     Path                = $_.Path
                     FileExistence       = (Test-Path $_.Path)
                     FileConsistencyTest = (Test-FileConsistency -Server $_.Server -Path $_.Path -Lot $_.Lot -StringToReplace $StringToReplace -NewString $NewString).FileConsistencyTest
-                    TestTCPConnection   = (Invoke-Command -Credential $Credentials -ComputerName VM1 -ScriptBlock { (Test-NetConnection -ComputerName $args[0] -Port $args[1]) } -ArgumentList $TargetHost, $TargetPort).tcptestsucceeded
+                    TestTCPConnection   = (
+                        
+                        Invoke-Command -Credential $Credentials -ComputerName VM1 -ScriptBlock ${Function:Get-TCPResponse} -ArgumentList $TargetHost, $TargetPort
+                    
+                    )
                     Lot                 = $_.Lot
                 }                
             } 
