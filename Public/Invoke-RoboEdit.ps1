@@ -42,7 +42,19 @@ Function Invoke-RoboEdit {
                     Path                = $_.Path
                     FileExistence       = (Test-Path $_.Path)
                     FileConsistencyTest = (Test-FileConsistency -Server $_.Server -Path $_.Path -Lot $_.Lot -StringToReplace $StringToReplace -NewString $NewString).FileConsistencyTest
-                    TestTCPConnection   = (Invoke-Command -ComputerName $_.Server -ScriptBlock ${Function:Test-TCPResponse} -ArgumentList $TargetHost, $TargetPort) | Select-Object IsOpen
+                    TestTCPConnection   = $(
+
+                        if ((Invoke-Command -ComputerName $_.Server -ScriptBlock { (Get-Host).Version }) -le 4) {
+
+                            Write-Output 'Powershell version need to fix'
+
+                        }
+                        else {
+
+                            Invoke-Command -ComputerName $_.Server -ScriptBlock ${Function:Test-TCPResponse} -ArgumentList $TargetHost, $TargetPort
+                        
+                        }
+                    ) 
                     TargetHost          = $TargetHost 
                     TargetPort          = $TargetPort
                     TargetString        = $NewString
