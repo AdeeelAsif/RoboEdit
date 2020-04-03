@@ -5,7 +5,7 @@ Function Test-TCPResponse {
 
     Param (
 
-        [parameter(ValueFromPipeline, ValueFromPipelineByPropertyName)]
+        [parameter(ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [Alias('Server', 'IP')]
         [string[]]$ComputerName = $env:ComputerName,
 
