@@ -13,14 +13,12 @@ Function Test-TCPResponse {
         [int[]]$Port,
 
         [Parameter(Mandatory = $false)]
-        [int]$TCPTimeout = 1000,
-
-        [Parameter(Mandatory = $false)]
-        [int]$PsVersion 
+        [int]$TCPTimeout = 1000
 
     )
     Process {
-
+        
+        $PsVersion = ($PSVersionTable).PSVersion.Major 
 
         If ($PsVersion -le 3) {
 
