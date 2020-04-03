@@ -42,16 +42,13 @@ Function Invoke-RoboEdit {
             Import-File -Path $Path -Lot $Lot -FileType $FileType | ForEach-Object {
 
                 [PSCustomObject]@{
-
                     Server              = $_.Server
                     Path                = $_.Path
                     FileExistence       = (Test-Path $_.Path)
                     FileConsistencyTest = (Test-FileConsistency -Server $_.Server -Path $_.Path -Lot $_.Lot -StringToReplace $StringToReplace -NewString $NewString).FileConsistencyTest
-                    TestTCPConnection   = (
-                        
-                        Invoke-Command -Credential $Credentials -ComputerName VM1 -ScriptBlock ${Function:Get-TCPResponse} -ArgumentList $TargetHost, $TargetPort
-                    
-                    )
+                    TestTCPConnection   = (Invoke-Command -Credential $Credentials -ComputerName VM1 -ScriptBlock ${Function:Get-TCPResponse} -ArgumentList $TargetHost, $TargetPort) | Select-Object IsOpen
+                    TargetHost          = $TargetHost
+                    TargetPort          = $TargetPort
                     Lot                 = $_.Lot
                 }                
             } 
@@ -59,14 +56,9 @@ Function Invoke-RoboEdit {
 
         { $_ -eq "Rollback" } {
 
-            <#Test#>
-
         }
-
         
         { $_ -eq "Test" } {
-
-            Import-File -Path $Path -Lot $Lot -FileType $FileType
 
         }
     }
