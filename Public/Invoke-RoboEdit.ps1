@@ -45,6 +45,7 @@ Function Invoke-RoboEdit {
                     TestTCPConnection   = (Invoke-Command -ComputerName $_.Server -ScriptBlock ${Function:Test-TCPResponse} -ArgumentList $TargetHost, $TargetPort) | Select-Object IsOpen
                     TargetHost          = $TargetHost 
                     TargetPort          = $TargetPort
+                    TargetString        = $NewString
                     Lot                 = $_.Lot
                 }                
             } 
