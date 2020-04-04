@@ -61,6 +61,7 @@ Function Invoke-RoboEdit {
                                 }
                                 finally {
                                     $tcpClient.Close()
+            
                                 }
                             } -ArgumentList $TargetHost, $TargetPort
                         }
