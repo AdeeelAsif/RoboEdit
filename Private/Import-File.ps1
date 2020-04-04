@@ -45,6 +45,7 @@ Function Import-File {
             if (($File.Lot | Select-Object -unique).count -eq 1) {
 
                 Write-Verbose "Lot consistency check OK"
+                $File | Add-Member -Name Objectcount -MemberType NoteProperty -Value ($File.Path.count)
                 Return $File
             }
             else {
