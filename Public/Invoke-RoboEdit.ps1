@@ -35,17 +35,12 @@ Function Invoke-RoboEdit {
 
         { $_ -eq "Deploy" } {
 
-            #  $WinSxS = Get-ChildItem C:\Windows\WinSxS
-            $i = 1
-            <#
-$WinSxS | ForEach-Object {
-    Write-Progress -Activity "Counting WinSxS file $($_.name)" -Status "File $i of $($WinSxS.Count)" -PercentComplete (($i / $WinSxS.Count) * 100)  
-    $i++
-} #>
             $i = 1 
+            $DeployResult = @()
+
             Import-File -Path $Path -Lot $Lot -FileType $FileType | ForEach-Object {
                 $PercentComplete = (($i / $_.ObjectCount) * 100)
-                [PSCustomObject]@{
+                $DeployResult += [PSCustomObject]@{
                     Server              = $_.Server
                     Path                = $_.Path
                     FileExistence       = (Test-Path $_.Path)
@@ -85,7 +80,9 @@ $WinSxS | ForEach-Object {
                 }
                 Write-Progress -Activity "Config File" -Status "File $i of $($_.ObjectCount)" -PercentComplete $PercentComplete -CurrentOperation $_.Path
                 $i++
-            } 
+            }
+            
+            $DeployResult 
         }
 
         { $_ -eq "Rollback" } {
