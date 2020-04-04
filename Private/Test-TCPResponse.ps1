@@ -34,7 +34,7 @@ Function Test-TCPResponse {
             }
             finally {
 
-                $tcpClient.Dispose()
+                $tcpClient.Close()
             }
 
         }
