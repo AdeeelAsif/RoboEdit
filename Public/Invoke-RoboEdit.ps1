@@ -44,7 +44,30 @@ Function Invoke-RoboEdit {
                     FileConsistencyTest = (Test-FileConsistency -Server $_.Server -Path $_.Path -Lot $_.Lot -StringToReplace $StringToReplace -NewString $NewString).FileConsistencyTest
                     TestTCPConnection   = $(
 
-                        Invoke-Command -ComputerName $_.Server -ScriptBlock ${Function:Test-TCPResponse} -ArgumentList $TargetHost, $TargetPort
+                        $PsVersion = Invoke-Command -ComputerName $_.Server -ScriptBlock { ($PSVersionTable).PSVersion.Major }
+
+                        If ($PsVersion -le 3) {
+
+                            Invoke-Command -ComputerName $_.Server -ScriptBlock {
+
+                                $TcpClient = New-Object Net.Sockets.TcpClient
+
+                                try {
+                                    $tcpClient.Connect($args[0], $args[1])
+                                    $true
+                                }
+                                catch {
+                                    $false
+                                }
+                                finally {
+                                    $tcpClient.Close()
+                                }
+                            } -ArgumentList $TargetHost, $TargetPort
+                        }
+                        else {
+                            
+                            Invoke-Command -ComputerName $_.Server -ScriptBlock ${Function:Test-TCPResponse} -ArgumentList $TargetHost, $TargetPort
+                        }
                     ) 
                     TargetHost          = $TargetHost 
                     TargetPort          = $TargetPort
