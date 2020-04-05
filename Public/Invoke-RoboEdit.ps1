@@ -43,46 +43,26 @@ Function Invoke-RoboEdit {
                 $DeployResult += [PSCustomObject]@{
                     Server              = $_.Server
                     Path                = $_.Path
+                    FileName            = $_.Name
                     FileExistence       = (Test-Path $_.Path)
                     FileConsistencyTest = (Test-FileConsistency -Server $_.Server -Path $_.Path -Lot $_.Lot -StringToReplace $StringToReplace -NewString $NewString).FileConsistencyTest
                     TestTCPConnection   = $(
 
-                        $PsVersion = Invoke-Command -ComputerName $_.Server -ScriptBlock { ($PSVersionTable).PSVersion.Major }
-
-                        If ($PsVersion -le 3) {
-
-                            Invoke-Command -ComputerName $_.Server -ScriptBlock {
-
-                                $TcpClient = New-Object Net.Sockets.TcpClient
-
-                                try {
-                                    $tcpClient.Connect($args[0], $args[1])
-                                    $true
-                                }
-                                catch {
-                                    $false
-                                }
-                                finally {
-                                    $tcpClient.Close()
-            
-                                }
-                            } -ArgumentList $TargetHost, $TargetPort
-                        }
-                        else {
-                            
-                            Invoke-Command -ComputerName $_.Server -ScriptBlock ${Function:Test-TCPResponse} -ArgumentList $TargetHost, $TargetPort
-                        }
+                        Test-TcpResponse -ComputerName $_.Server -TargetHost $TargetHost -TargetPort $TargetPort 
+                      
                     ) 
                     TargetHost          = $TargetHost 
                     TargetPort          = $TargetPort
                     TargetString        = $NewString
                     Lot                 = $_.Lot
                 }
+                # NwolNlwNlNswllNwwclNvwwl "Config File" -Status "File $i of $($_.ObjectCount)" -PercentComplete $PercentComplete -CurrentOperation $_.Path
                 Write-Progress -Activity "Config File" -Status "File $i of $($_.ObjectCount)" -PercentComplete $PercentComplete -CurrentOperation $_.Path
                 $i++
             }
             
-            $DeployResult 
+            $DeployResult  
+            #  New-ConfigFileBackup -Path $DeployResult.Path -Name $DeployResult.FileName -Server $DeployResult.Server -Lot 1        
         }
 
         { $_ -eq "Rollback" } {

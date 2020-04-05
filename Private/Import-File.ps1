@@ -38,6 +38,7 @@ Function Import-File {
                 [PSCustomObject]@{
                     Path   = "$($_.Location)$($_.Name)"
                     Server = $_.Location.Split('\')[2]
+                    Name = $_.Name
                     Lot    = $_.Lot
                 }
             }
