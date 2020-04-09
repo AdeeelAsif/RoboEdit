@@ -6,60 +6,43 @@ Function New-ConfigFileBackup {
         [string[]]$Path,
 
         [Parameter(Mandatory = $True, ValueFromPipeline = $True)]
-        [string[]]$Name,
+        [string[]]$FileName,
 
         [Parameter(Mandatory = $True, ValueFromPipeline = $True)]
         [string[]]$Server,
+
+        [Parameter(Mandatory = $true, ValueFromPipeline = $True)]
+        [String[]]$BackupSequence,
+
+        [Parameter(Mandatory = $true, ValueFromPipeline = $True)]
+        [String[]]$RestorePath,
 
         [Parameter(Mandatory = $true, ValueFromPipeline = $True)]
         [int]$Lot
 
     )
 
-    Function Test-ConfigFilePath {
-
-        param(
-
-            [Parameter(Mandatory = $true)]        
-            [string]$FilePath
-        )
-
-        if (!(Test-Path $FilePath)) {
-
-            New-Item -ItemType Directory -Path $FilePath
-        }
-    }
-
-    $Date = Get-Date -UFormat "%d-%m-%Y-%H%M"
     $Report = @()
+    $Date = Get-Date -UFormat "%d-%m-%Y-%H%M-%m%S"
+    $RootPath = "\\repository-fr.fd.fnac.dom\FDOPS-PublicShare\adeel\RoboEdit\$($Date)\$($Lot)"
 
-    $Path | ForEach-Object {
+    [void](New-Item -Type Directory -Path $RootPath)
 
-        $Path = $_
+    for ($i = 0; $i -lt $Path.Count; $i++) {
+        
+        Write-Verbose "Backup $($Path[$i])"
+        [void](New-Item -Type Directory -Path "$($RootPath)\$($BackupSequence[$i])")
+        Copy-Item "$($Path[$i])" -Destination "$($RootPath)\$($BackupSequence[$i])"
 
-        $Server | ForEach-Object {
-
-            $ServerName = $_
-
-            $FullPath = "\\repository-fr.fd.fnac.dom\FDOPS-PublicShare\adeel\RoboEdit\$($Date)\$($Lot)\$($ServerName)"
-            #$LotPath = "\\repository-fr.fd.fnac.dom\FDOPS-PublicShare\adeel\RoboEdit\$($Date)\$($Lot)"
-
-            #Test-ConfigFilePath  $LotPath 
-            Test-ConfigFilePath $FullPath
-
-            $Name | ForEach-Object {
+        $Report += [PSCustomObject]@{
+            Server      = $Server[$i]
+            #FileName    = $FileName[$i]
+            RestorePath = $RestorePath[$i]
+            BackupPath  = "$($RootPath)\$($BackupSequence[$i])\$($FileName[$i])"
+            Lot         = $lot
+            Timestamp   = (Get-Date -format o)
+        } 
+    }  
     
-                Copy-Item $Path "\\repository-fr.fd.fnac.dom\FDOPS-PublicShare\adeel\RoboEdit\$($Date)\$($Lot)\$($ServerName)\"
-                $Report += [PSCustomObject]@{
-                    Server     = $ServerName
-                    FileName   = $_
-                    BackupPath = "\\repository-fr.fd.fnac.dom\FDOPS-PublicShare\adeel\RoboEdit\$($Date)\$($Lot)\$($_)\$($FileName))"
-                    Lot        = $lot
-                    Timestamp  = (Get-Date -format o)
-                } 
-            }
-        }
-    }
-
-    $Report | ConvertTo-Json | Out-File \\repository-fr.fd.fnac.dom\FDOPS-PublicShare\adeel\RoboEdit\$($Date)\$($Lot)\BackupReport.json
+    $Report | ConvertTo-Json | Out-File $RootPath\BackupReport.json
 }

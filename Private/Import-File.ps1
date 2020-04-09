@@ -36,10 +36,11 @@ Function Import-File {
             
             $File = Import-Csv -Path $Path -Delimiter ";" | Where-Object { $_.Lot -eq $Lot } | ForEach-Object {
                 [PSCustomObject]@{
-                    Path   = "$($_.Location)$($_.Name)"
-                    Server = $_.Location.Split('\')[2]
-                    Name = $_.Name
-                    Lot    = $_.Lot
+                    Path        = "$($_.Location)$($_.Name)"
+                    RestorePath = $($_.Location)
+                    Server      = $_.Location.Split('\')[2]
+                    Name        = $_.Name
+                    Lot         = $_.Lot 
                 }
             }
 

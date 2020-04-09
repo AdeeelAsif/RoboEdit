@@ -39,30 +39,34 @@ Function Invoke-RoboEdit {
             $DeployResult = @()
 
             Import-File -Path $Path -Lot $Lot -FileType $FileType | ForEach-Object {
+
                 $PercentComplete = (($i / $_.ObjectCount) * 100)
+
+                Write-Progress -Activity "Config File" -Status "File $i of $($_.ObjectCount)" -PercentComplete $PercentComplete -CurrentOperation $_.Path
+
                 $DeployResult += [PSCustomObject]@{
+
                     Server              = $_.Server
                     Path                = $_.Path
                     FileName            = $_.Name
                     FileExistence       = (Test-Path $_.Path)
                     FileConsistencyTest = (Test-FileConsistency -Server $_.Server -Path $_.Path -Lot $_.Lot -StringToReplace $StringToReplace -NewString $NewString).FileConsistencyTest
-                    TestTCPConnection   = $(
-
-                        Test-TcpResponse -ComputerName $_.Server -TargetHost $TargetHost -TargetPort $TargetPort 
-                      
-                    ) 
+                    TestTCPConnection   = $(Test-TcpResponse -ComputerName $_.Server -TargetHost $TargetHost -TargetPort $TargetPort) 
                     TargetHost          = $TargetHost 
                     TargetPort          = $TargetPort
                     TargetString        = $NewString
+                    AssociatedServer    = $(Get-ServerList -ServerName $_.Server)
                     Lot                 = $_.Lot
+                    BackupSequence      = "$($_.Server)\$($i)"
+                    RestorePath         = $_.RestorePath
                 }
-                # NwolNlwNlNswllNwwclNvwwl "Config File" -Status "File $i of $($_.ObjectCount)" -PercentComplete $PercentComplete -CurrentOperation $_.Path
-                Write-Progress -Activity "Config File" -Status "File $i of $($_.ObjectCount)" -PercentComplete $PercentComplete -CurrentOperation $_.Path
+               
                 $i++
             }
             
-            $DeployResult  
-            #  New-ConfigFileBackup -Path $DeployResult.Path -Name $DeployResult.FileName -Server $DeployResult.Server -Lot 1        
+            
+            New-ConfigFileBackup -Path $DeployResult.Path -FileName $DeployResult.FileName -Server $DeployResult.Server -Lot 1 -RestorePath $DeployResult.RestorePath -BackupSequence $DeployResult.BackupSequence    
+            $DeployResult
         }
 
         { $_ -eq "Rollback" } {
