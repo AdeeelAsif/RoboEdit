@@ -33,11 +33,11 @@ Function Import-File {
             Write-Verbose "File Type is CSV"
             Write-Verbose "Importing File $($Path)"
             Write-Verbose "Lot is $($Lot)"
-            $Servers = @()
-            $File = Import-Csv -Path $Path -Delimiter ";" | Where-Object { $_.Lot -eq $Lot }
-            $File | ForEach-Object { $Servers += $_.Location.Split('\')[2] }
 
-            $ProcessedList = $Servers | Select-Object -unique | ForEach-Object {
+            $File = Import-Csv -Path $Path -Delimiter ";" | Where-Object { $_.Lot -eq $Lot }
+            $Servers = ($File | Select-Object -ExpandProperty Location | ForEach-Object { $_.Split('\')[2] }) | Select-Object -unique
+            
+            $ProcessedList = $Servers | ForEach-Object {
 
                 $UniqueServerName = $_
                 $ServerCatalog = Get-ServerList -ServerName $_
@@ -62,10 +62,11 @@ Function Import-File {
 
             if (($File.Lot | Select-Object -unique).count -eq 1) {
 
+                $ReturnProcessedList = $ProcessedList | Select-Object * -Unique
                 Write-Verbose "Lot consistency check OK"
-                Write-Verbose "Total config file to check : $($ProcessedList.Path.count)"
-                $ProcessedList | Add-Member -Name Objectcount -MemberType NoteProperty -Value ($ProcessedList.Path.count)
-                Return $ProcessedList
+                Write-Verbose "Total config file to check : $($ReturnProcessedList.Path.count)"
+                $ReturnProcessedList | Add-Member -Name Objectcount -MemberType NoteProperty -Value ($ReturnProcessedList.Path.count)
+                Return $ReturnProcessedList
             }
             else {
 
