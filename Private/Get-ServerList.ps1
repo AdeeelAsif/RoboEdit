@@ -9,67 +9,33 @@ Function Get-ServerList {
 
     $SQLHostname = "FCVSQL3CLSTR2\FD105OPS1,59081" 
     $Databasename = "NOLIO_DB"
+    $List = @("WPFWEBFD", "WPWEBFR", "FCXAWPWSFRONT", "FCXAWPWSBACK", "WPWEBSHOP", "TASK1", "FCXSVC", "WPETL")
 
-    Function Get-NolioList {
+    $List | ForEach-Object {
 
-        param (
+        if ($ServerName -match $_) {
+    
+            $StringMatched = $Matches.GetEnumerator() | Select-Object -ExpandProperty Value
+    
+        }
+    }
 
-            [String]$StringMatched
+    if ($StringMatched) {
+        $Query = "SELECT Server_name FROM [NOLIO_DB].[dbo].[servers] WHERE server_name LIKE '%$($StringMatched)%' AND OS_TYPE LIKE '%WINDOWS%' ORDER BY Server_Name ASC"
 
-        )
-        
-        $Query = "SELECT Server_name FROM [NOLIO_DB].[dbo].[servers] WHERE server_name LIKE '%$($StringMatched)%'"
+        Push-Location
 
         [PSCustomObject]@{
             ServerList     = @(Invoke-Sqlcmd -ServerInstance $SQLHostname -Database $Databasename -Query $Query).Server_Name
             ServerCategory = $StringMatched
         }
+
+        Pop-Location
+        Clear-Variable Matches, StringMatched
     }
-    
-    Switch ($ServerName) {
+    else {
 
+        Write-Output 0
 
-        { $_ -match "WPFWEBFD" } {
-
-            Push-Location
-            Get-NolioList -StringMatched ($Matches.GetEnumerator() | Select-Object -ExpandProperty Value)
-            Pop-Location
-        }
-
-        { $_ -match "WPWEBFR" } {
-
-            Push-Location
-            Get-NolioList -StringMatched ($Matches.GetEnumerator() | Select-Object -ExpandProperty Value)
-            Pop-Location
-
-    
-        }
-
-        { $_ -match "WPWSFRONT" } {
-
-            Push-Location
-            Get-NolioList -StringMatched ($Matches.GetEnumerator() | Select-Object -ExpandProperty Value)
-            Pop-Location
-
-        }
-
-        { $_ -match "WPWSBACK" } {
-
-            Push-Location
-            Get-NolioList -StringMatched ($Matches.GetEnumerator() | Select-Object -ExpandProperty Value)
-            Pop-Location
-        }
-
-        { $_ -match "WPWEBSHOP" } {
-
-            Push-Location
-            Get-NolioList -StringMatched ($Matches.GetEnumerator() | Select-Object -ExpandProperty Value)
-            Pop-Location
-        }
-
-        default {
-
-            Write-Output 0
-        }
     }
 }

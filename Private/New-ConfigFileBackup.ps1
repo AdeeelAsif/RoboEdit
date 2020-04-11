@@ -30,19 +30,26 @@ Function New-ConfigFileBackup {
 
     for ($i = 0; $i -lt $Path.Count; $i++) {
         
-        Write-Verbose "Backup $($Path[$i])"
-        [void](New-Item -Type Directory -Path "$($RootPath)\$($BackupSequence[$i])")
-        Copy-Item "$($Path[$i])" -Destination "$($RootPath)\$($BackupSequence[$i])"
+        if ((Test-Path "$($Path[$i])")) {
 
-        $Report += [PSCustomObject]@{
-            Server      = $Server[$i]
-            #FileName    = $FileName[$i]
-            RestorePath = $RestorePath[$i]
-            BackupPath  = "$($RootPath)\$($BackupSequence[$i])\$($FileName[$i])"
-            Lot         = $lot
-            Timestamp   = (Get-Date -format o)
-        } 
-    }  
+            Write-Verbose "Backup $($Path[$i])"
+            [void](New-Item -Type Directory -Path "$($RootPath)\$($BackupSequence[$i])")
+            Copy-Item "$($Path[$i])" -Destination "$($RootPath)\$($BackupSequence[$i])"
+
+            $Report += [PSCustomObject]@{
+                Server      = $Server[$i]
+                #FileName    = $FileName[$i]
+                RestorePath = $RestorePath[$i]
+                BackupPath  = "$($RootPath)\$($BackupSequence[$i])\$($FileName[$i])"
+                Lot         = $lot
+                Timestamp   = (Get-Date -format o)
+            } 
+        }
+        else {
+
+            Write-Verbose "Could not found file $($Path[$i])"
+        }  
+    }
     
     $Report | ConvertTo-Json | Out-File $RootPath\BackupReport.json
 }

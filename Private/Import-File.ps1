@@ -33,22 +33,39 @@ Function Import-File {
             Write-Verbose "File Type is CSV"
             Write-Verbose "Importing File $($Path)"
             Write-Verbose "Lot is $($Lot)"
+            $Servers = @()
+            $File = Import-Csv -Path $Path -Delimiter ";" | Where-Object { $_.Lot -eq $Lot }
+            $File | ForEach-Object { $Servers += $_.Location.Split('\')[2] }
+
+            $ProcessedList = $Servers | Select-Object -unique | ForEach-Object {
+
+                $UniqueServerName = $_
+                $ServerCatalog = Get-ServerList -ServerName $_
+                Write-verbose "Server list : $($ServerCatalog.ServerList)"
             
-            $File = Import-Csv -Path $Path -Delimiter ";" | Where-Object { $_.Lot -eq $Lot } | ForEach-Object {
-                [PSCustomObject]@{
-                    Path        = "$($_.Location)$($_.Name)"
-                    RestorePath = $($_.Location)
-                    Server      = $_.Location.Split('\')[2]
-                    Name        = $_.Name
-                    Lot         = $_.Lot 
+                $File | Where-Object { ($_.Location.Split('\')[2]) -eq $UniqueServerName } | ForEach-Object { 
+            
+                    $FileContent = $_
+                    
+                    $ServerCatalog.ServerList | ForEach-Object {
+            
+                        [PSCustomObject]@{
+                            Path        = "$($FileContent.Location)$($FileContent.Name)".Replace($UniqueServerName, $_)
+                            RestorePath = $($FileContent.Location).Replace($UniqueServerName, $_)
+                            Server      = $_
+                            Name        = $FileContent.Name
+                            Lot         = $FileContent.Lot 
+                        } 
+                    }
                 }
             }
 
             if (($File.Lot | Select-Object -unique).count -eq 1) {
 
                 Write-Verbose "Lot consistency check OK"
-                $File | Add-Member -Name Objectcount -MemberType NoteProperty -Value ($File.Path.count)
-                Return $File
+                Write-Verbose "Total config file to check : $($ProcessedList.Path.count)"
+                $ProcessedList | Add-Member -Name Objectcount -MemberType NoteProperty -Value ($ProcessedList.Path.count)
+                Return $ProcessedList
             }
             else {
 

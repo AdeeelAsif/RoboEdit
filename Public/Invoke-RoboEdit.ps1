@@ -38,10 +38,20 @@ Function Invoke-RoboEdit {
             $i = 1 
             $DeployResult = @()
 
-            Import-File -Path $Path -Lot $Lot -FileType $FileType | ForEach-Object {
+            $File = Import-File -Path $Path -Lot $Lot -FileType $FileType 
+
+            $TcpResponseObject = $File.Server | Select-Object -Unique | ForEach-Object {
+
+                [PSCustomObject]@{
+                    Result = $(Test-TcpResponse -ComputerName $_ -TargetHost $TargetHost -TargetPort $TargetPort)
+                    Server = $_
+                }    
+            }
+            
+            $File | ForEach-Object {
 
                 $PercentComplete = (($i / $_.ObjectCount) * 100)
-
+                $TcpServerName = $_.Server
                 Write-Progress -Activity "Config File" -Status "File $i of $($_.ObjectCount)" -PercentComplete $PercentComplete -CurrentOperation $_.Path
 
                 $DeployResult += [PSCustomObject]@{
@@ -51,11 +61,10 @@ Function Invoke-RoboEdit {
                     FileName            = $_.Name
                     FileExistence       = (Test-Path $_.Path)
                     FileConsistencyTest = (Test-FileConsistency -Server $_.Server -Path $_.Path -Lot $_.Lot -StringToReplace $StringToReplace -NewString $NewString).FileConsistencyTest
-                    TestTCPConnection   = $(Test-TcpResponse -ComputerName $_.Server -TargetHost $TargetHost -TargetPort $TargetPort) 
+                    TestTCPConnection   = $($TcpResponseObject | Where-Object { $_.Server -eq $TcpServerName } | Select-Object -ExpandProperty Result)
                     TargetHost          = $TargetHost 
                     TargetPort          = $TargetPort
                     TargetString        = $NewString
-                    AssociatedServer    = $(Get-ServerList -ServerName $_.Server)
                     Lot                 = $_.Lot
                     BackupSequence      = "$($_.Server)\$($i)"
                     RestorePath         = $_.RestorePath
@@ -65,7 +74,7 @@ Function Invoke-RoboEdit {
             }
             
             
-            New-ConfigFileBackup -Path $DeployResult.Path -FileName $DeployResult.FileName -Server $DeployResult.Server -Lot 1 -RestorePath $DeployResult.RestorePath -BackupSequence $DeployResult.BackupSequence    
+            New-ConfigFileBackup -Path $DeployResult.Path -FileName $DeployResult.FileName -Server $DeployResult.Server -Lot $Lot -RestorePath $DeployResult.RestorePath -BackupSequence $DeployResult.BackupSequence    
             $DeployResult
         }
 

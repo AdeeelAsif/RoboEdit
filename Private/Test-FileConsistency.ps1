@@ -19,17 +19,46 @@ Function Test-FileConsistency {
 
     )
 
-    $Content = Get-Content $Path 
+    $Content = try {
+        
+        Get-Content $Path -ErrorAction Stop
+        [bool]$FileContentException = $false
+    }
+    catch {
+
+        [bool]$FileContentException = $true
+
+    }
+
+    if ($FileContentException -eq $true) {
+
+        $ReturnExceptionContext = $StringToReplace | ForEach-Object {
+
+            [PSCustomObject]@{
+                Server              = $Server
+                Path                = $Path
+                Lot                 = $Lot
+                StringToReplace     = $_.Replace('\\', '\')
+                FileConsistencyTest = [PSCustomObject]@{
+                    Name   = $_.Replace('\\', '\')
+                    Result = "Failed"
+                }
+            }
+        }
+
+        Return $ReturnExceptionContext
+
+    }
+
+
     $StringToReplace | ForEach-Object {
 
         if ([bool]($content -match $_) -eq $true) {
 
             [PSCustomObject]@{
                 Server              = $Server
-                #FileConsistency     = $true
                 Path                = $Path
                 Lot                 = $Lot
-                #   Newstring       = $NewString
                 FileConsistencyTest = [PSCustomObject]@{
                     Name   = $_.Replace('\\', '\')
                     Result = "Passed"
@@ -40,11 +69,9 @@ Function Test-FileConsistency {
 
             [PSCustomObject]@{
                 Server              = $Server
-                #  FileConsistency     = $false
                 Path                = $Path
                 Lot                 = $Lot
                 StringToReplace     = $_.Replace('\\', '\')
-                #    Newstring       = $NewString
                 FileConsistencyTest = [PSCustomObject]@{
                     Name   = $_.Replace('\\', '\')
                     Result = "Failed"
