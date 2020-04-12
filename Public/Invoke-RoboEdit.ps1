@@ -33,9 +33,10 @@ Function Invoke-RoboEdit {
     Write-Verbose "Hello $env:USERNAME!"
     Write-verbose "Date is $($Metadata.Date)"
     Write-Verbose "Execution mode is $($Mode)"
+    Write-Verbose "Debug is set to : $($DebugEnabled)"
     Write-Verbose "Root folder for reports, debug, logs, backup is $($Config.userdesktoppath)"
     Write-Verbose "Backup path is : $($Config.BackupPath)"
-
+    
     try {
     
         $ResolveDnsName = Resolve-DnsName -Name $TargetHost -ErrorAction Stop -Verbose:$False
@@ -106,7 +107,7 @@ Function Invoke-RoboEdit {
 
         $PercentComplete = (($y / $_.ObjectCount) * 100)
         $TcpServerName = $_.Server
-        Write-Progress -Activity "Config File" -Status "File $y of $($_.ObjectCount)" -PercentComplete $PercentComplete -CurrentOperation $_.Path
+        Write-Progress -Activity "Config File Scanning" -Status "File $y of $($_.ObjectCount)" -PercentComplete $PercentComplete -CurrentOperation $_.Path
 
         $ImportObject += [PSCustomObject]@{
 
@@ -133,8 +134,23 @@ Function Invoke-RoboEdit {
 
         { $_ -eq "Deploy" } {
             
-            $ImportObject
-            New-ConfigFileBackup -Path $ImportObject.Path -FileName $ImportObject.FileName -Server $ImportObject.Server -Lot $Lot -RestorePath $ImportObject.RestorePath -BackupSequence $ImportObject.BackupSequence 
+            $EligibleObject = foreach ($item in $ImportObject) {
+
+                if (($Item.FileExistence -eq $true) -and ($Item.FileConsistencyTest -eq "Passed") -and ($Item.TCPIsOpen -eq $true)) {
+
+                    $Item
+
+                }
+            }
+
+            Write-Verbose "Total eligible items : $($EligibleObject.path.count)" 
+
+            if ($EligibleObject) {
+                New-ConfigFileBackup -Path $EligibleObject.Path -FileName $EligibleObject.FileName -Server $EligibleObject.Server `
+                    -Lot $Lot -RestorePath $EligibleObject.RestorePath -BackupSequence $EligibleObject.BackupSequence 
+
+                $EligibleObject | ConvertTo-Csv -NoTypeInformation -Delimiter ";" | Out-File "$($Config.EligibleReportPath)\EligibleItemReport_lot$($lot).csv"
+            }
         }
 
         { $_ -eq "Rollback" } {

@@ -23,16 +23,19 @@ Function New-ConfigFileBackup {
     )
 
     $Report = @()
-    Write-Verbose "Root path for backup is : $($Config.BackupPath)\$($Lot) "
     $RootPath = "$($Config.BackupPath)\$($Lot)"
 
     [void](New-Item -Type Directory -Path $RootPath)
 
     for ($i = 0; $i -lt $Path.Count; $i++) {
         
+        $PercentComplete = (($i / $Path.count) * 100)
+
         if ((Test-Path "$($Path[$i])")) {
 
-            Write-Verbose "Backup $($Path[$i])"
+            Write-Progress -Activity "Backup config files" -Status "$(([math]::Round($PercentComplete)))%" `
+                -PercentComplete $PercentComplete -CurrentOperation "Backup $($Path[$i]) to $($RootPath)\$($BackupSequence[$i])"
+
             [void](New-Item -Type Directory -Path "$($RootPath)\$($BackupSequence[$i])")
             Copy-Item "$($Path[$i])" -Destination "$($RootPath)\$($BackupSequence[$i])"
 
@@ -52,4 +55,6 @@ Function New-ConfigFileBackup {
     }
     
     $Report | ConvertTo-Json | Out-File $RootPath\BackupReport.json
+    Write-Verbose "Total backed up files : $($Report.server.count)"
+    Write-Verbose "Backup report generated at : $($RootPath)\BackupReport.json"
 }

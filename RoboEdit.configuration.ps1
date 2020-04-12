@@ -3,10 +3,13 @@ $Metadata = @{
     'Date' = $(Get-Date -UFormat "%Y%d%m%H%M%S")
 }
 
+#If Debug Enabled is set to $true then debug files are generated 
+$DebugEnabled = $true
+
 $Config = @{ 
     
     'userdesktoppath'    = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)"))
-    'Debuglogspath'      = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)"))
+    'Debuglogspath'      = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)\debug"))
     'TestReportPath'     = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)"))
     'EligibleReportPath' = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)"))
     'FinalReportPath'    = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)"))
