@@ -13,8 +13,6 @@ Function Import-File {
         [string]$FileType
     )
 
-    Write-Verbose "Function Import-File" 
-
     if (!(Test-Path $Path)) {
         Write-Error -ErrorId 1 -Exception "File doesn't exist"
         Return
@@ -30,13 +28,13 @@ Function Import-File {
         
         { $_ -eq "Csv" } {
 
-            Write-Verbose "File Type is CSV"
             Write-Verbose "Importing File $($Path)"
+            Write-Verbose "File Type is CSV"
             Write-Verbose "Lot is $($Lot)"
 
             $File = Import-Csv -Path $Path -Delimiter ";" | Where-Object { $_.Lot -eq $Lot }
             $Servers = ($File | Select-Object -ExpandProperty Location | ForEach-Object { $_.Split('\')[2] }) | Select-Object -unique
-            
+
             $ProcessedList = $Servers | ForEach-Object {
 
                 $UniqueServerName = $_

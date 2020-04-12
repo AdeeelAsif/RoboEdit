@@ -1,0 +1,24 @@
+$Metadata = @{
+
+    'Date' = $(Get-Date -UFormat "%Y%d%m%H%M%S")
+}
+
+$Config = @{ 
+    
+    'userdesktoppath'    = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)"))
+    'Debuglogspath'      = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)\debug"))
+    'TestReportPath'     = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)\reports"))
+    'EligibleReportPath' = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)\reports"))
+    'FinalReportPath'    = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)\reports"))
+    'BackupPath'         = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)\backup"))
+   
+}
+
+ForEach ($Configuration in $config.keys) { 
+
+    if (!(Test-Path $Config.$Configuration)) {
+    
+        [void](New-Item -ItemType Directory -Path $Config.$Configuration)
+
+    }
+}

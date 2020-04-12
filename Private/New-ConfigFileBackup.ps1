@@ -23,8 +23,8 @@ Function New-ConfigFileBackup {
     )
 
     $Report = @()
-    $Date = Get-Date -UFormat "%d-%m-%Y-%H%M-%m%S"
-    $RootPath = "\\repository-fr.fd.fnac.dom\FDOPS-PublicShare\adeel\RoboEdit\$($Date)\$($Lot)"
+    Write-Verbose "Root path for backup is : $($Config.BackupPath)\$($Lot) "
+    $RootPath = "$($Config.BackupPath)\$($Lot)"
 
     [void](New-Item -Type Directory -Path $RootPath)
 

@@ -12,7 +12,7 @@ Function Test-FileConsistency {
         [string]$Lot,
         
         [Parameter(Mandatory = $true)]
-        [string[]]$StringToReplace,
+        [string]$StringToReplace,
 
         [Parameter(Mandatory = $true)]
         [string]$NewString
@@ -32,50 +32,43 @@ Function Test-FileConsistency {
 
     if ($FileContentException -eq $true) {
 
-        $ReturnExceptionContext = $StringToReplace | ForEach-Object {
-
-            [PSCustomObject]@{
-                Server              = $Server
-                Path                = $Path
-                Lot                 = $Lot
-                StringToReplace     = $_.Replace('\\', '\')
-                FileConsistencyTest = [PSCustomObject]@{
-                    Name   = $_.Replace('\\', '\')
-                    Result = "Failed"
-                }
+        $Exception = [PSCustomObject]@{
+            Server              = $Server
+            Path                = $Path
+            Lot                 = $Lot
+            StringToReplace     = $StringToReplace.Replace('\\', '\')
+            FileConsistencyTest = [PSCustomObject]@{
+                Name   = $StringToReplace.Replace('\\', '\')
+                Result = "Failed"
             }
         }
 
-        Return $ReturnExceptionContext
-
+        Return $Exception
     }
 
+    if ([bool]($content -match $StringToReplace) -eq $true) {
 
-    $StringToReplace | ForEach-Object {
-
-        if ([bool]($content -match $_) -eq $true) {
-
-            [PSCustomObject]@{
-                Server              = $Server
-                Path                = $Path
-                Lot                 = $Lot
-                FileConsistencyTest = [PSCustomObject]@{
-                    Name   = $_.Replace('\\', '\')
-                    Result = "Passed"
-                }
+        [PSCustomObject]@{
+            Server              = $Server
+            Path                = $Path
+            Lot                 = $Lot
+            StringToReplace     = $StringToReplace.Replace('\\', '\')
+            FileConsistencyTest = [PSCustomObject]@{
+                Name   = $StringToReplace.Replace('\\', '\')
+                Result = "Passed"
             }
         }
-        else {
+    }
+    else {
 
-            [PSCustomObject]@{
-                Server              = $Server
-                Path                = $Path
-                Lot                 = $Lot
-                StringToReplace     = $_.Replace('\\', '\')
-                FileConsistencyTest = [PSCustomObject]@{
-                    Name   = $_.Replace('\\', '\')
-                    Result = "Failed"
-                }
+        [PSCustomObject]@{
+            Server              = $Server
+            Path                = $Path
+            Lot                 = $Lot
+            StringToReplace     = $StringToReplace.Replace('\\', '\')
+            FileConsistencyTest = [PSCustomObject]@{
+                Name   = $StringToReplace.Replace('\\', '\')
+                Result = "Failed"
             }
         }
     }
