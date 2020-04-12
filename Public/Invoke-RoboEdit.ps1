@@ -34,22 +34,41 @@ Function Invoke-RoboEdit {
     Write-verbose "Date is $($Metadata.Date)"
     Write-Verbose "Execution mode is $($Mode)"
     Write-Verbose "Root folder for reports, debug, logs, backup is $($Config.userdesktoppath)"
-    Write-Verbose "TestReportPath is $($Config.TestReportPath)"
-    Write-Verbose "EligibleReportPath is $($Config.EligibleReportPath)"
-    Write-Verbose "FinalReportPath is $($Config.FinalReportPath)"
-    Write-Verbose "Debug logs path is $($Config.DebugLogsPath)"
+    Write-Verbose "Backup path is : $($Config.BackupPath)"
+
+    try {
     
-    $i = 1 
+        $ResolveDnsName = Resolve-DnsName -Name $TargetHost -ErrorAction Stop -Verbose:$False
+        Write-Verbose "$($TargetHost) type is : $($ResolveDnsName.type)"
+        Write-Verbose "$($TargetHost) IP address is : $($ResolveDnsName.IP4Address)"
+
+        if ($ResolveDnsName.type -eq "CNAME") { 
+
+            Write-Verbose "$($TargetHost) NameHost is : $($ResolveDnsName.NameHost)"
+
+        } 
+    }
+    catch {
+    
+        Write-Host $_.Exception.Message -ForegroundColor Red
+        Return
+    }
+    
     $ImportObject = @()
     $File = Import-File -Path $Path -Lot $Lot -FileType $FileType 
     $TotalHosts = ($File.Server | Select-Object -unique).Count
 
-    Write-verbose "Testing Winrm"
     Write-Verbose "Total host count : $($TotalHosts)"
-
+    Write-verbose "Testing Winrm"
+    
+    $i = 1 
     $TestWinRM = $File.Server | Select-Object -unique | ForEach-Object {
 
+        $PercentComplete = (($i / $TotalHosts) * 100)
         Test-TCPResponse -ComputerName $($env:COMPUTERNAME) -TargetHost $_ -TargetPort 5985
+        Write-Progress -Activity "Testing WinRM connectivity" -Status "$(([math]::Round($PercentComplete)))%" `
+            -PercentComplete $PercentComplete -CurrentOperation "Testing target $($_) on port 5985 from $($env:COMPUTERNAME)"
+        $i++
 
     }
 
@@ -66,19 +85,28 @@ Function Invoke-RoboEdit {
 
     }
 
+    $z = 1
     $TcpResponseObject = $File.Server | Select-Object -Unique | ForEach-Object {
+
+        $PercentComplete = (($z / $TotalHosts) * 100)
 
         [PSCustomObject]@{
             Result = $(Test-TcpResponse -ComputerName $_ -TargetHost $TargetHost -TargetPort $TargetPort).IsOpen
             Server = $_
-        }    
+        }
+        
+        Write-Progress -Activity "Testing TCP port $($Targetport)" -Status "$(([math]::Round($PercentComplete)))%" `
+            -PercentComplete $PercentComplete -CurrentOperation "Testing target $($Targethost) on port $($Targetport) from $($_)"
+        $z++
+
     }
     
+    $y = 1
     $File | ForEach-Object {
 
-        $PercentComplete = (($i / $_.ObjectCount) * 100)
+        $PercentComplete = (($y / $_.ObjectCount) * 100)
         $TcpServerName = $_.Server
-        Write-Progress -Activity "Config File" -Status "File $i of $($_.ObjectCount)" -PercentComplete $PercentComplete -CurrentOperation $_.Path
+        Write-Progress -Activity "Config File" -Status "File $y of $($_.ObjectCount)" -PercentComplete $PercentComplete -CurrentOperation $_.Path
 
         $ImportObject += [PSCustomObject]@{
 
@@ -94,11 +122,11 @@ Function Invoke-RoboEdit {
             TargetString        = $NewString
             Lot                 = $_.Lot
             BackupRootPath      = $Config.BackupPath
-            BackupSequence      = "$($_.Server)\$($i)"
+            BackupSequence      = "$($_.Server)\$($y)"
             RestorePath         = $_.RestorePath
         }
        
-        $i++
+        $y++
     }
   
     Switch ($Mode) {
@@ -134,8 +162,8 @@ Function Invoke-RoboEdit {
             
             }
 
-            Write-host "Total test count : $($ImportObject.Path.count)" -ForegroundColor Green
-            Write-host "Total eligible item : $($EligibleObject.path.count)" -ForegroundColor green
+            Write-host "Total items tested : $($ImportObject.Path.count)" -ForegroundColor Green
+            Write-host "Total eligible items : $($EligibleObject.path.count)" -ForegroundColor green
 
         }
     }

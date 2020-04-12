@@ -6,10 +6,10 @@ $Metadata = @{
 $Config = @{ 
     
     'userdesktoppath'    = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)"))
-    'Debuglogspath'      = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)\debug"))
-    'TestReportPath'     = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)\reports"))
-    'EligibleReportPath' = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)\reports"))
-    'FinalReportPath'    = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)\reports"))
+    'Debuglogspath'      = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)"))
+    'TestReportPath'     = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)"))
+    'EligibleReportPath' = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)"))
+    'FinalReportPath'    = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)"))
     'BackupPath'         = $([Environment]::ExpandEnvironmentVariables("C:\Users\%Username%\desktop\RoboEdit\$($metadata.date)\backup"))
    
 }

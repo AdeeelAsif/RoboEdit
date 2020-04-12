@@ -34,12 +34,13 @@ Function Import-File {
 
             $File = Import-Csv -Path $Path -Delimiter ";" | Where-Object { $_.Lot -eq $Lot }
             $Servers = ($File | Select-Object -ExpandProperty Location | ForEach-Object { $_.Split('\')[2] }) | Select-Object -unique
+            $i = 1
 
             $ProcessedList = $Servers | ForEach-Object {
 
                 $UniqueServerName = $_
                 $ServerCatalog = Get-ServerList -ServerName $_
-                Write-verbose "Server list : $($ServerCatalog.ServerList)"
+                Write-verbose "Server list $($i) : $($ServerCatalog.ServerList -join ",")"
             
                 $File | Where-Object { ($_.Location.Split('\')[2]) -eq $UniqueServerName } | ForEach-Object { 
             
@@ -56,6 +57,8 @@ Function Import-File {
                         } 
                     }
                 }
+
+                $i++
             }
 
             if (($File.Lot | Select-Object -unique).count -eq 1) {
