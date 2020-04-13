@@ -23,7 +23,7 @@ Function New-ConfigFileBackup {
     )
 
     $Report = @()
-    $RootPath = "$($Config.BackupPath)\$($Lot)"
+    $RootPath = "$($Config.BackupPath)\lot_$($Lot)"
 
     [void](New-Item -Type Directory -Path $RootPath)
 
@@ -40,12 +40,13 @@ Function New-ConfigFileBackup {
             Copy-Item "$($Path[$i])" -Destination "$($RootPath)\$($BackupSequence[$i])"
 
             $Report += [PSCustomObject]@{
+
                 Server      = $Server[$i]
-                #FileName    = $FileName[$i]
                 RestorePath = $RestorePath[$i]
                 BackupPath  = "$($RootPath)\$($BackupSequence[$i])\$($FileName[$i])"
                 Lot         = $lot
                 Timestamp   = (Get-Date -format o)
+
             } 
         }
         else {

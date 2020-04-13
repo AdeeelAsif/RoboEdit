@@ -15,3 +15,4 @@ Foreach ($import in @($Public + $Private)) {
 . $PSScriptRoot\RoboEdit.configuration.ps1
 
 Export-ModuleMember -Function $Public.Basename
+$VerbosePreference = 'Continue'

@@ -38,12 +38,29 @@ Function Test-FileConsistency {
             Lot                 = $Lot
             StringToReplace     = $StringToReplace.Replace('\\', '\')
             FileConsistencyTest = [PSCustomObject]@{
+
                 Name   = $StringToReplace.Replace('\\', '\')
                 Result = "Failed"
             }
         }
 
         Return $Exception
+    }
+    
+    try {
+        
+        [bool]($content -match $StringToReplace) 
+    }
+    catch [System.ArgumentException] {
+    
+        if ($_.Exception.Message -match "Unrecognized escape sequence") {
+
+            $StringToReplace = $StringToReplace.Replace("\", "\\")
+        }
+    }
+    catch { 
+
+        $_.Exception
     }
 
     if ([bool]($content -match $StringToReplace) -eq $true) {
@@ -54,6 +71,7 @@ Function Test-FileConsistency {
             Lot                 = $Lot
             StringToReplace     = $StringToReplace.Replace('\\', '\')
             FileConsistencyTest = [PSCustomObject]@{
+
                 Name   = $StringToReplace.Replace('\\', '\')
                 Result = "Passed"
             }
@@ -67,6 +85,7 @@ Function Test-FileConsistency {
             Lot                 = $Lot
             StringToReplace     = $StringToReplace.Replace('\\', '\')
             FileConsistencyTest = [PSCustomObject]@{
+
                 Name   = $StringToReplace.Replace('\\', '\')
                 Result = "Failed"
             }

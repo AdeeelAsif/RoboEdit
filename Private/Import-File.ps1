@@ -6,73 +6,68 @@ Function Import-File {
         [string]$Path,
 
         [Parameter(Mandatory = $true, ValueFromPipeline = $True)]
-        [int]$Lot,
+        [int]$Lot
 
-        [Parameter(Mandatory = $true)]
-        [ValidateSet('Json', 'Csv', 'Xml')]
-        [string]$FileType
     )
 
     if (!(Test-Path $Path)) {
-        Write-Error -ErrorId 1 -Exception "File doesn't exist"
-        Return
+
+        Write-Error -ErrorAction Stop -ErrorId 1 -Exception "File $($Path) doesn't exist" 
     }
 
     if ($lot -lt 0) {
 
-        Write-Error -ErrorId 2 -Exception "Lot should be greater or equal to 0"
-        Return
+        Write-Error -ErrorAction Stop -ErrorId 2 -Exception "Lot should be greater or equal to 0"
     }
 
-    Switch ($FileType) {
-        
-        { $_ -eq "Csv" } {
+    Write-Verbose "Importing File $($Path)"
+    Write-Verbose "Lot is $($Lot)"
 
-            Write-Verbose "Importing File $($Path)"
-            Write-Verbose "File Type is CSV"
-            Write-Verbose "Lot is $($Lot)"
+    $File = Import-Csv -Path $Path -Delimiter ";" | Where-Object { $_.Lot -eq $Lot }
 
-            $File = Import-Csv -Path $Path -Delimiter ";" | Where-Object { $_.Lot -eq $Lot }
-            $Servers = ($File | Select-Object -ExpandProperty Location | ForEach-Object { $_.Split('\')[2] }) | Select-Object -unique
-            $i = 1
+    if (!$File) {
 
-            $ProcessedList = $Servers | ForEach-Object {
+        Write-Error -ErrorAction Stop -ErrorId 3 -Exception "No data found for lot $($lot)" 
+    }
 
-                $UniqueServerName = $_
-                $ServerCatalog = Get-ServerList -ServerName $_
-                Write-verbose "Server list $($i) : $($ServerCatalog.ServerList -join ",")"
+    $Servers = ($File | Select-Object -ExpandProperty Location | ForEach-Object { $_.Split('\')[2] }) | Select-Object -unique
+    $i = 1
+
+    $ProcessedList = $Servers | ForEach-Object {
+
+        $UniqueServerName = $_
+        $ServerCatalog = Get-ServerList -ServerName $_
+        Write-verbose "Server list $($i) : $($ServerCatalog.ServerList -join ",")"
             
-                $File | Where-Object { ($_.Location.Split('\')[2]) -eq $UniqueServerName } | ForEach-Object { 
+        $File | Where-Object { ($_.Location.Split('\')[2]) -eq $UniqueServerName } | ForEach-Object { 
             
-                    $FileContent = $_
+            $FileContent = $_
                     
-                    $ServerCatalog.ServerList | ForEach-Object {
+            $ServerCatalog.ServerList | ForEach-Object {
             
-                        [PSCustomObject]@{
-                            Path        = "$($FileContent.Location)$($FileContent.Name)".Replace($UniqueServerName, $_)
-                            RestorePath = $($FileContent.Location).Replace($UniqueServerName, $_)
-                            Server      = $_
-                            Name        = $FileContent.Name
-                            Lot         = $FileContent.Lot 
-                        } 
-                    }
-                }
-
-                $i++
-            }
-
-            if (($File.Lot | Select-Object -unique).count -eq 1) {
-
-                $ReturnProcessedList = $ProcessedList | Select-Object * -Unique
-                Write-Verbose "Lot consistency check OK"
-                Write-Verbose "Total config file to check : $($ReturnProcessedList.Path.count)"
-                $ReturnProcessedList | Add-Member -Name Objectcount -MemberType NoteProperty -Value ($ReturnProcessedList.Path.count)
-                Return $ReturnProcessedList
-            }
-            else {
-
-                Write-Error -ErrorId 3 -Exception "Lot consistency check KO"
+                [PSCustomObject]@{
+                    Path        = "$($FileContent.Location)$($FileContent.Name)".Replace($UniqueServerName, $_)
+                    RestorePath = $($FileContent.Location).Replace($UniqueServerName, $_)
+                    Server      = $_
+                    Name        = $FileContent.Name
+                    Lot         = $FileContent.Lot 
+                } 
             }
         }
+
+        $i++
+    }
+
+    if (($File.Lot | Select-Object -unique).count -eq 1) {
+
+        $ReturnProcessedList = $ProcessedList | Select-Object * -Unique
+        Write-Verbose "Lot consistency check OK"
+        Write-Verbose "Total config file to check : $($ReturnProcessedList.Path.count)"
+        $ReturnProcessedList | Add-Member -Name Objectcount -MemberType NoteProperty -Value ($ReturnProcessedList.Path.count)
+        Return $ReturnProcessedList
+    }
+    else {
+
+        Write-Error -ErrorAction Stop -ErrorId 3 -Exception "Lot consistency check KO"
     }
 }

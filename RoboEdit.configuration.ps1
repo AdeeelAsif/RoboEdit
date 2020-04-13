@@ -3,6 +3,9 @@ $Metadata = @{
     'Date' = $(Get-Date -UFormat "%Y%d%m%H%M%S")
 }
 
+#Declare here the servers category
+$ServersType = @("WPFWEBFD", "WPWEBFR", "FCXAWPWSFRONT", "FCXAWPWSBACK", "WPWEBSHOP", "TASK1", "FCXSVC", "WPETL", "FCXAWOEXPLOIT")
+
 #If Debug Enabled is set to $true then debug files are generated 
 $DebugEnabled = $true
 

@@ -9,7 +9,7 @@ Function Get-ServerList {
 
     $SQLHostname = "FCVSQL3CLSTR2\FD105OPS1,59081" 
     $Databasename = "NOLIO_DB"
-    $List = @("WPFWEBFD", "WPWEBFR", "FCXAWPWSFRONT", "FCXAWPWSBACK", "WPWEBSHOP", "TASK1", "FCXSVC", "WPETL")
+    $List = $ServersType
 
     $List | ForEach-Object {
 
@@ -21,12 +21,21 @@ Function Get-ServerList {
     }
 
     if ($StringMatched) {
+
         $Query = "SELECT Server_name FROM [NOLIO_DB].[dbo].[servers] WHERE server_name LIKE '%$($StringMatched)%' AND OS_TYPE LIKE '%WINDOWS%' ORDER BY Server_Name ASC"
 
         Push-Location
+        
+        $ServersList = @(Invoke-Sqlcmd -ServerInstance $SQLHostname -Database $Databasename -Query $Query).Server_Name
+
+        if (!$ServersList) {
+
+            Write-Error -ErrorAction Stop -ErrorId 7 -Exception "No match found for $($ServerName) in NOLIO DB"
+
+        }
 
         [PSCustomObject]@{
-            ServerList     = @(Invoke-Sqlcmd -ServerInstance $SQLHostname -Database $Databasename -Query $Query).Server_Name
+            ServerList     = $ServersList
             ServerCategory = $StringMatched
         }
 
@@ -35,7 +44,6 @@ Function Get-ServerList {
     }
     else {
 
-        Write-Output 0
-
+        Write-Error -ErrorAction Stop -ErrorId 6 -Exception "No match found for $($ServerName)" 
     }
 }

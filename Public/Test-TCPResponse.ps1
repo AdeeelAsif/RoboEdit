@@ -22,7 +22,6 @@ Function Test-TCPResponse {
     )
 
     $PsVersion = Invoke-Command -ComputerName $ComputerName -ScriptBlock { ($PSVersionTable).PSVersion.Major }
-    #Write-verbose "Testing target $($Targethost) on port $($Targetport) from $($ComputerName)"
 
     Switch ($PsVersion) {
 
