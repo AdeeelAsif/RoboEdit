@@ -31,6 +31,7 @@ Function Invoke-RoboEdit {
 
     )
 
+    Invoke-RoboEditConfiguration
     Write-Verbose "Hello $env:USERNAME!"
     Write-verbose "Date is $($Metadata.Date)"
     Write-Verbose "Execution mode is $($Mode)"

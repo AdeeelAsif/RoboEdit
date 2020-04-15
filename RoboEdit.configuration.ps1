@@ -20,6 +20,10 @@ $Config = @{
    
 }
 
+function Invoke-RoboEditConfiguration {
+
+Write-verbose "Starting configuration"
+
 ForEach ($Configuration in $config.keys) { 
 
     if (!(Test-Path $Config.$Configuration)) {
@@ -27,4 +31,5 @@ ForEach ($Configuration in $config.keys) {
         [void](New-Item -ItemType Directory -Path $Config.$Configuration)
 
     }
+  }
 }
