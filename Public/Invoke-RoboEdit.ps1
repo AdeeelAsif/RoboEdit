@@ -31,7 +31,6 @@ Function Invoke-RoboEdit {
 
     )
 
-    Invoke-RoboEditConfiguration
     Write-Verbose "Hello $env:USERNAME!"
     Write-verbose "Date is $($Metadata.Date)"
     Write-Verbose "Execution mode is $($Mode)"
@@ -122,6 +121,8 @@ Function Invoke-RoboEdit {
                 FileExistence       = (Test-Path $_.Path)
                 StringChecked       = $StringToReplace
                 FileConsistencyTest = (Test-FileConsistency -Server $_.Server -Path $_.Path -Lot $_.Lot -StringToReplace $StringToReplace -NewString $NewString).FileConsistencyTest.Result
+                Hits                = (Test-FileConsistency -Server $_.Server -Path $_.Path -Lot $_.Lot -StringToReplace $StringToReplace -NewString $NewString).FileConsistencyTest.Hits
+                Text                = (Test-FileConsistency -Server $_.Server -Path $_.Path -Lot $_.Lot -StringToReplace $StringToReplace -NewString $NewString).FileConsistencyTest.Text
                 TCPIsOpen           = $($TcpResponseObject | Where-Object { $_.Server -eq $TcpServerName } | Select-Object -ExpandProperty Result)
                 TargetHost          = $TargetHost 
                 TargetPort          = $TargetPort
@@ -177,7 +178,7 @@ Function Invoke-RoboEdit {
 
             $RollbackJson = Get-Content $BackupHistoryFile
             $RollbackFile = $RollbackJson | ConvertFrom-Json 
-            Write-Verbose "Number of files to rollback : $($RollbackFile.count)"
+            Write-Verbose "Number of files to rollback : $($RollbackFile.backuppath.count)"
 
             foreach ($item in $RollbackFile) {
             

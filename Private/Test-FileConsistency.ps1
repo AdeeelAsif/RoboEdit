@@ -41,6 +41,8 @@ Function Test-FileConsistency {
 
                 Name   = $StringToReplace.Replace('\\', '\')
                 Result = "Failed"
+                Hits   = 0
+                Text   = "N/A"
             }
         }
 
@@ -53,7 +55,7 @@ Function Test-FileConsistency {
     }
     catch [System.ArgumentException] {
     
-        if ($_.Exception.Message -match "Unrecognized escape sequence") {
+        if (($_.Exception.Message -match "Unrecognized escape sequence") -or ($_.Exception.Message -match 'Malformed')) {
 
             $StringToReplace = $StringToReplace.Replace("\", "\\")
         }
@@ -65,6 +67,9 @@ Function Test-FileConsistency {
 
     if ([bool]($content -match $StringToReplace) -eq $true) {
 
+        $Text = [string]($content -match $StringToReplace)
+        $Text = $Text.Replace(";", " ")
+
         [PSCustomObject]@{
             Server              = $Server
             Path                = $Path
@@ -74,6 +79,8 @@ Function Test-FileConsistency {
 
                 Name   = $StringToReplace.Replace('\\', '\')
                 Result = "Passed"
+                Hits   = ($Content -match $StringToReplace).count
+                Text   = $Text.Trim()
             }
         }
     }
@@ -88,6 +95,8 @@ Function Test-FileConsistency {
 
                 Name   = $StringToReplace.Replace('\\', '\')
                 Result = "Failed"
+                Hits   = ($Content -match $StringToReplace).count
+                Text   = "N/A"
             }
         }
     }

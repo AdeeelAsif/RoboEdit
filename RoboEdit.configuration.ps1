@@ -4,7 +4,7 @@ $Metadata = @{
 }
 
 #Declare here the servers category
-$ServersType = @("WPFWEBFD", "WPWEBFR", "FCXAWPWSFRONT", "FCXAWPWSBACK", "WPWEBSHOP", "TASK1", "FCXSVC", "WPETL", "FCXAWOEXPLOIT")
+$ServersType = @("WPWEBAPP", "WPFWEBFD", "WPWEBFR", "FCXAWPWSFRONT", "FCXAWPWSBACK", "WPWEBSHOP", "TASK1", "FCXSVC", "WPETL", "FCXAWOEXPLOIT")
 
 #If Debug Enabled is set to $true then debug files are generated 
 $DebugEnabled = $true
@@ -20,16 +20,33 @@ $Config = @{
    
 }
 
-function Invoke-RoboEditConfiguration {
-
-Write-verbose "Starting configuration"
-
 ForEach ($Configuration in $config.keys) { 
 
     if (!(Test-Path $Config.$Configuration)) {
-    
+
         [void](New-Item -ItemType Directory -Path $Config.$Configuration)
 
     }
-  }
 }
+
+<#
+function Invoke-RoboEditConfiguration {
+
+    Write-verbose "Starting configuration"
+
+    $Metadata = @{
+
+        'Date' = $(Get-Date -UFormat "%Y%d%m%H%M%S")
+    }
+
+    ForEach ($Configuration in $config.keys) { 
+
+        if (!(Test-Path $Config.$Configuration)) {
+    
+            [void](New-Item -ItemType Directory -Path $Config.$Configuration)
+
+        }
+    }
+}
+
+#>

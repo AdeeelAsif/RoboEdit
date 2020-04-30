@@ -23,7 +23,7 @@ Function Import-File {
     Write-Verbose "Importing File $($Path)"
     Write-Verbose "Lot is $($Lot)"
 
-    $File = Import-Csv -Path $Path -Delimiter ";" | Where-Object { $_.Lot -eq $Lot }
+    $File = Import-Csv -Path $Path -Delimiter ";" | Where-Object { ($_.Lot -eq $Lot) -and ($_.Status -ne "Commit") }
 
     if (!$File) {
 
