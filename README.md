@@ -51,7 +51,7 @@ Invoke-RoboEdit -Path C:\data\file.csv -Lot 1 -Mode Deploy -StringToReplace 'old
 Invoke-RoboEdit -Mode Rollback -BackupHistoryFile C:\Users\user1\Desktop\RoboEdit\20201404013207\backup\lot_1\BackupReport.json
 
 ```
-##### 3. BulkEdit mode
+##### 4. BulkEdit mode
 
 ```powershell
 
